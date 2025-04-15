@@ -13,12 +13,10 @@ import pandas as pd
 from raft import RAFT
 from utils.utils import InputPadder
 
-from openpiv import tools, pyprocess, validation, filters, scaling
-
-
+#from openpiv import tools, pyprocess, validation, filters, scaling
+#############################################################################################
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-
 
 def load_image(frame):
     img = np.array(frame).astype(np.uint8)
@@ -105,20 +103,13 @@ def farnebackMethod(inputVid,outputVid,saveVel):
         curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)
         h, w = curr_frame.shape[:2]
         flow = cv2.calcOpticalFlowFarneback(prev_gray, curr_gray, flow, 0.5, 3, 15, 3, 5, 1.2, 0)
-        #print(flow[::20,::20,:],
         velData.append(average_window(flow,[8,8]))
-        #velData.append(pd.DataFrame(flow.reshape(h*w,2), columns=['u','v']))
         flowImage = quiverImage(flow,curr_frame)
         outputVid.write(flowImage)
         prev_gray = curr_gray
     np.save(saveVel,np.array(velData))
-    #frames = np.arange(1,frame_count)
-    #allVel = pd.concat(velData, keys=frames)
-    #allVel.to_parquet("velData_farneback.parquet")
-    #with h5py.File(saveVel, 'w') as hf:
-    #    hf.create_dataset('data', data=np.array(velData), compression='gzip', compression_opts=4)
 
-def openPIV(inputVid, outputVid):
+'''def openPIV(inputVid, outputVid):
     # Parameters for openPIV
     dt = 1.0 / 130000.0  # Time between frames (adjust based on your video's frame rate)
     winsize = 16
@@ -159,8 +150,9 @@ def openPIV(inputVid, outputVid):
         quiver_image = cv2.resize(quiver_image, (w, h))
         plt.close()
         outputVid.write(quiver_image)
-        prev_gray = curr_gray
+        prev_gray = curr_gray'''
 
+#############################################################################################
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--method', default='farneback', help="raft or farneback or piv")
@@ -171,7 +163,6 @@ if __name__ == '__main__':
     parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
     args = parser.parse_args()
     inputVid = cv2.VideoCapture(args.path)
-    # Create a new Namespace with only arg1 and arg2
     if args.method == 'raft':
         new_args = argparse.Namespace()
         setattr(new_args, 'model', args.model)
@@ -188,9 +179,10 @@ if __name__ == '__main__':
         outputVid = outputVideoWriter(inputVid,outputVideoPath)
         outputVelocityPath = args.path[:-4]+'_'+args.method+'_'+args.model+'.npy'
         farnebackMethod(inputVid, outputVid, outputVelocityPath)
-    elif args.method == 'piv':
+    '''elif args.method == 'piv':
         outputVideoPath = args.path[:-4]+'_'+args.method+'.avi'
         outputVid = outputVideoWriter(inputVid,outputVideoPath)
-        openPIV(inputVid, outputVid)
+        openPIV(inputVid, outputVid)'''
     inputVid.release()
     outputVid.release()
+#############################################################################################
