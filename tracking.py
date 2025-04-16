@@ -176,8 +176,9 @@ def farnebackMethod(inputVid,outputVid,saveVel):
         quiver_image = cv2.imdecode(np.frombuffer(buf.read(), np.uint8), cv2.IMREAD_COLOR)
         # Resize the quiver image to match the original image size (if necessary)
         quiver_image = cv2.resize(quiver_image, (w, h))
-        del buff
+        del buf
         plt.close()
+        prev_gray = curr_gray
         outputVid.write(quiver_image)
     inputVid.release()
     outputVid.release()
