@@ -90,10 +90,6 @@ def quiverImage(flow,curr_frame):
 
 def average_window(arr, window_size):
     h, w = arr.shape[:2]
-    window_height, window_width = window_size
-    kernel = np.ones(window_size) / (window_height*window_width)
-    pad_height = window_height // 2
-    pad_width = window_width // 2
     result = np.zeros(arr.shape)#np.zeros((int(h/window_size[0]), int(w/window_size[1]), 2))
     for i in range(0,h,window_size[0]):
         for j in range(0,w,window_size[1]):
@@ -149,6 +145,8 @@ def farnebackMethod(inputVid,outputVid,saveVel):
     h, w = prev_frame.shape[:2]
     window_size = [8,8]
     window_height, window_width = window_size
+    pad_height = window_height // 2
+    pad_width = window_width // 2
     kernel = np.ones(window_size) / (window_height*window_width)
     velData = np.zeros((frame_count-1, h//window_height, w//window_width, 2), dtype='float64')
     flow=None
@@ -156,11 +154,13 @@ def farnebackMethod(inputVid,outputVid,saveVel):
         ret, curr_frame = inputVid.read()
         curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)
         flow = cv2.calcOpticalFlowFarneback(prev_gray, curr_gray, flow, 0.5, 3, 15, 3, 5, 1.2, 0)
-        #velData.append(average_window(flow,[8,8]))
-        #flow = flow[::8,::8]
+        padded_arr = np.pad(flow, ((pad_height, pad_height), (pad_width, pad_width), (0, 0)), mode='reflect')
+        averaged_arr = np.zeros((h // window_height, w // window_width, 2), dtype=flow.dtype)
+        for channel in range(2):
+            averaged_arr[:, :, channel] = cv2.filter2D(padded_arr[:, :, channel], -1, kernel)[pad_height:-pad_height:window_height, pad_width:-pad_width:window_width]
         #flowImage = quiverImage(flow,curr_frame)
         #outputVid.write(flowImage)
-        velData[frame_index - 1] = avg_window(flow,window_size)
+        velData[frame_index - 1] = averaged_arr
         prev_gray = curr_gray
     inputVid.release()
     outputVid.release()
