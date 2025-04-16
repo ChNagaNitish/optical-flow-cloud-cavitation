@@ -159,7 +159,29 @@ def farnebackMethod(inputVid,outputVid,saveVel):
         for channel in range(2):
             averaged_arr[:, :, channel] = cv2.filter2D(padded_arr[:, :, channel], -1, kernel)[pad_height:-pad_height:window_height, pad_width:-pad_width:window_width]
         #flowImage = quiverImage(flow,curr_frame)
-        #outputVid.write(flowImage)
+        h, w = curr_frame.shape[:2]  # Get image height and width
+        # Create a grid of points for the quiver plot
+        step = 15 # Adjust step (15) for density of arrows
+        y, x = np.mgrid[0:h:step, 0:w:step] 
+        u = flow[y, x, 0]
+        v = flow[y, x, 1]
+        # Create the quiver plot
+        plt.figure(figsize=(w / 100, h / 100), dpi=100) # Adjust figure size to match image dimensions
+        plt.imshow(curr_frame, cmap='gray')
+        plt.quiver(x, y, u, -v, color='red')
+        #plt.gca().invert_yaxis()  # Invert y-axis to match image coordinates
+        plt.axis('off')  # Turn off axis labels and ticks
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0) # remove extra white space around plot.
+        # Save the plot to a memory buffer
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)  # Save to buffer
+        buf.seek(0)
+        # Read the image from the buffer using cv2
+        quiver_image = cv2.imdecode(np.frombuffer(buf.read(), np.uint8), cv2.IMREAD_COLOR)
+        # Resize the quiver image to match the original image size (if necessary)
+        quiver_image = cv2.resize(quiver_image, (w, h))
+        plt.close()
+        outputVid.write(quiver_Image)
         velData[frame_index - 1] = averaged_arr
         prev_gray = curr_gray
     inputVid.release()
