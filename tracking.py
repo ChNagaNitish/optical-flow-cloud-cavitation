@@ -159,9 +159,8 @@ def farnebackMethod(inputVid,outputVid,saveVel):
         for channel in range(2):
             averaged_arr[:, :, channel] = cv2.filter2D(padded_arr[:, :, channel], -1, kernel)[pad_height:-pad_height:window_height, pad_width:-pad_width:window_width]
         #flowImage = quiverImage(flow,curr_frame)
-        h, w = curr_frame.shape[:2]  # Get image height and width
         # Create a grid of points for the quiver plot
-        step = 15 # Adjust step (15) for density of arrows
+        step = 8 # Adjust step (15) for density of arrows
         y, x = np.mgrid[0:h:step, 0:w:step] 
         u = flow[y, x, 0]
         v = flow[y, x, 1]
@@ -181,7 +180,7 @@ def farnebackMethod(inputVid,outputVid,saveVel):
         # Resize the quiver image to match the original image size (if necessary)
         quiver_image = cv2.resize(quiver_image, (w, h))
         plt.close()
-        outputVid.write(quiver_Image)
+        outputVid.write(quiver_image)
         velData[frame_index - 1] = averaged_arr
         prev_gray = curr_gray
     inputVid.release()
