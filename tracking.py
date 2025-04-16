@@ -165,16 +165,16 @@ def farnebackMethod(inputVid,outputVid,saveVel):
         v = averaged_arr[:,:,1]
         magnitude = np.sqrt(u**2 + v**2)
         normalized_magnitude = (magnitude / (magnitude.max() if magnitude.max() > 0 else 1) * 255).astype(np.uint8)
-        colorized_arrows = cv2.applyColorMap(normalized_magnitude, color_map)
+        #colorized_arrows = cv2.applyColorMap(normalized_magnitude, color_map)
         for i in range(averaged_arr.shape[0]):
             for j in range(averaged_arr.shape[1]):
-                arrow_len = 15  # Fixed arrow length
+                arrow_len = 15*normalized_magnitude[i,j]  # Fixed arrow length
                 pt1 = (x[j], y[i])  # OpenCV uses (x, y)
                 pt2_x = int(pt1[0] + u[i, j] * arrow_len)
                 pt2_y = int(pt1[1] + v[i, j] * arrow_len)
                 pt2 = (pt2_x, pt2_y)
                 arrow_color = tuple(map(int, colorized_arrows[i, j]))  # Get color from colormap
-                cv2.arrowedLine(prev_gray, pt1, pt2, arrow_color, arrow_thickness, tipLength=0.2)
+                cv2.arrowedLine(prev_gray, pt1, pt2, (0,0,255), 1, tipLength=0.2)
         outputVid.write(prev_gray)
         velData[frame_index - 1] = averaged_arr
         prev_gray = curr_gray
