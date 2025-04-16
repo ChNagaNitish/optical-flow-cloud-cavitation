@@ -161,23 +161,24 @@ def farnebackMethod(inputVid,outputVid,saveVel):
         #flowImage = quiverImage(flow,curr_frame)
         # Create a grid of points for the quiver plot
         y, x = np.mgrid[0:h:window_height, 0:w:window_width] 
-        u = averaged_arr[:,:,0]
-        v = averaged_arr[:,:,1]
-        magnitude = np.sqrt(u**2 + v**2)
-        normalized_magnitude = (magnitude / (magnitude.max() if magnitude.max() > 0 else 1) * 255).astype(np.uint8)
-        #colorized_arrows = cv2.applyColorMap(normalized_magnitude, color_map)
-        for i in range(averaged_arr.shape[0]):
-            for j in range(averaged_arr.shape[1]):
-                arrow_len = 15*normalized_magnitude[i,j]  # Fixed arrow length
-                pt1 = (x[j], y[i])  # OpenCV uses (x, y)
-                pt2_x = int(pt1[0] + u[i, j] * arrow_len)
-                pt2_y = int(pt1[1] + v[i, j] * arrow_len)
-                pt2 = (pt2_x, pt2_y)
-                arrow_color = tuple(map(int, colorized_arrows[i, j]))  # Get color from colormap
-                cv2.arrowedLine(prev_gray, pt1, pt2, (0,0,255), 1, tipLength=0.2)
-        outputVid.write(prev_gray)
-        velData[frame_index - 1] = averaged_arr
-        prev_gray = curr_gray
+        # Create the quiver plot
+        plt.figure(figsize=(w / 100, h / 100), dpi=100) # Adjust figure size to match image dimensions
+        plt.imshow(prev_gray, cmap='gray')
+        plt.quiver(x, y, averaged_arr[:,:,0], -averaged_arr[:,:,1], color='red')
+        #plt.gca().invert_yaxis()  # Invert y-axis to match image coordinates
+        plt.axis('off')  # Turn off axis labels and ticks
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0) # remove extra white space around plot.
+        # Save the plot to a memory buffer
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)  # Save to buffer
+        buf.seek(0)
+        # Read the image from the buffer using cv2
+        quiver_image = cv2.imdecode(np.frombuffer(buf.read(), np.uint8), cv2.IMREAD_COLOR)
+        # Resize the quiver image to match the original image size (if necessary)
+        quiver_image = cv2.resize(quiver_image, (w, h))
+        del buff
+        plt.close()
+        outputVid.write(quiver_image)
     inputVid.release()
     outputVid.release()
     np.save(saveVel,velData)
