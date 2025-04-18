@@ -1,6 +1,7 @@
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
+import 
 
 def plotVelAtPoint(path):
     inputVelData = np.load(path)
@@ -36,7 +37,6 @@ def plotVelAtLines(path):
     v = inputVelData[:,:,:,1]*factor
     velMag = np.sqrt(u**2 + v**2)
     xPts = [20, 80, 140]
-    print(np.mean(u[:,:,20],axis=0).shape)
     plt.figure(1)
     for x in xPts:
         plt.plot(np.mean(u[:,:,x],axis=0),(u.shape[1]-1)*mm_per_px*8-np.arange(u.shape[1])*mm_per_px*8,label='x = ' + str(x*8*mm_per_px) + ' mm')
@@ -44,7 +44,24 @@ def plotVelAtLines(path):
     plt.xlabel('Velocity (m/s)')
     plt.ylabel('y (mm)')
     plt.savefig(path[:-4]+'_compareLines.png')
-    
+
+def plotVelAtHLines(path):
+    inputVelData = np.load(path)
+    mm_per_px = 0.02175955
+    fps_capture = 130000
+    factor = mm_per_px*1e-3*fps_capture
+    u = inputVelData[:,:,:,0]*factor
+    v = inputVelData[:,:,:,1]*factor
+    velMag = np.sqrt(u**2 + v**2)
+    y = 44
+    nFrames = u.shape[0]
+    plt.figure(1)
+    for i in range(nFrames):
+        plt.plot(np.arange(u.shape[2])*mm_per_px*8,u[i,y,:])
+        plt.ylabel('Velocity (m/s)')
+        plt.xlabel('x (mm)')
+        plt.ylim([-10,20])
+    #plt.savefig(path[:-4]+'_compareHLines.png')
 
 def compareAtPoint(input1, input2):
     mm_per_px = 0.02175955
