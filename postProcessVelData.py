@@ -1,7 +1,7 @@
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
-import 
+import matplotlib.animation as animation
 
 def plotVelAtPoint(path):
     inputVelData = np.load(path)
