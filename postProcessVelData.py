@@ -45,7 +45,7 @@ def plotVelAtLines(path):
     plt.ylabel('y (mm)')
     plt.savefig(path[:-4]+'_compareLines.png')
 
-def plotVelAtHLines(path):
+def plotVelAtHLines(path,fps=10):
     inputVelData = np.load(path)
     mm_per_px = 0.02175955
     fps_capture = 130000
@@ -54,14 +54,21 @@ def plotVelAtHLines(path):
     v = inputVelData[:,:,:,1]*factor
     velMag = np.sqrt(u**2 + v**2)
     y = 44
+    x_mm = np.arange(u.shape[2])*mm_per_px*8
     nFrames = u.shape[0]
-    plt.figure(1)
-    for i in range(nFrames):
-        plt.plot(np.arange(u.shape[2])*mm_per_px*8,u[i,y,:])
-        plt.ylabel('Velocity (m/s)')
-        plt.xlabel('x (mm)')
-        plt.ylim([-10,20])
-    #plt.savefig(path[:-4]+'_compareHLines.png')
+    fig, ax = plt.subplots()
+    line, = ax.plot(x_mm,u[0,y,:])
+    ax.set_xlabel('x [mm]')
+    ax.set_ylabel('u [m/s]')
+    ax.set_ylim([-15,25])
+    title = ax.set_title(f'Frame 0/{nFrames-1}')
+    def updateFrame(frame):
+        line.set_ydata(u[frame,y,:])
+        title.set_text(f'Frame {frame}/{nFrames-1}')
+        return line, title
+    ani = animation.FuncAnimation(fig=fig, func=updateFrame, blit=True, interval=1000/fps,repeat=False)
+    writer = animation.FFMpegWriter(fps=fps)
+    ani.save(path[:-4]+'_hline.avi', writer=writer, dpi=150)
 
 def compareAtPoint(input1, input2):
     mm_per_px = 0.02175955
@@ -92,8 +99,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.method == 'points':
         plotVelAtPoint(args.path)
-    if args.method == 'lines':
+    elif args.method == 'lines':
         plotVelAtLines(args.path)
+    elif args.method == 'hlines':
+        plotVelAtHLines(args.path)
     elif args.method == 'compare':
         input1 = np.load(args.path)
         input2 = np.load(args.path2)
