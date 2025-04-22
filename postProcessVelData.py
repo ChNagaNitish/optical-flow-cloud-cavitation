@@ -137,5 +137,5 @@ if __name__ == '__main__':
     elif args.method == 'hlines':
         plotVelAtHLines(args.path,int(args.fps))
     elif args.method == 'compareAlgo':
-        compareAlgo(args.path,args.legend,args.output,int(args.fps))
+        compareAlgo(args.path,args.legend,args.output,int(args.fps),algo)
     
