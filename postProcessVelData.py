@@ -89,7 +89,7 @@ def compareAlgo(path,legend,output,fps,algo):
     dataAll = []
     legends = legend.split(',')
     y = 44
-    for f in nFiles:
+    for f in range(nFiles):
         if f==(nFiles-1) and algo=='piv':
             y=int(y/2)
         dataAll.append(np.load(paths[f])[:,y,:,0]*factor)
@@ -104,7 +104,9 @@ def compareAlgo(path,legend,output,fps,algo):
             line, = ax.plot(x_mm,dataAll[f][0,:], label=legends[f])
         else:
             line, = ax.plot(x_piv,dataAll[f][0,:], label=legends[f])
+        print('Here')
         lines.append(line)
+        print('Here')
     ax.axhline(0,color='black',linewidth=0.5)
     ax.set_xlabel('x [mm]')
     ax.set_ylabel('u [m/s]')
@@ -137,5 +139,5 @@ if __name__ == '__main__':
     elif args.method == 'hlines':
         plotVelAtHLines(args.path,int(args.fps))
     elif args.method == 'compareAlgo':
-        compareAlgo(args.path,args.legend,args.output,int(args.fps),algo)
+        compareAlgo(args.path,args.legend,args.output,int(args.fps),args.algo)
     
