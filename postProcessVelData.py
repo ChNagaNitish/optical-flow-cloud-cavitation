@@ -50,52 +50,65 @@ def plotVelAtHLines(path,fps):
     mm_per_px = 0.02175955
     fps_capture = 130000
     factor = mm_per_px*1e-3*fps_capture
-    u = inputVelData[:,:,:,0]*factor
-    v = inputVelData[:,:,:,1]*factor
-    velMag = np.sqrt(u**2 + v**2)
     y = 44
-    x_mm = np.arange(u.shape[2])*mm_per_px*8
+    u = inputVelData[:,y,:,0]*factor
+    x_mm = np.arange(u.shape[1])*mm_per_px*8
     nFrames = u.shape[0]
     fig, ax = plt.subplots()
-    line, = ax.plot(x_mm,u[0,y,:])
+    line, = ax.plot(x_mm,u[0,:])
+    ax.axhline(0,color='black',linewidth=0.5)
     ax.set_xlabel('x [mm]')
     ax.set_ylabel('u [m/s]')
     ax.set_ylim([-15,25])
     title = ax.set_title(f'Frame 1/{nFrames}')
     def updateFrame(frame):
-        line.set_ydata(u[frame,y,:])
+        line.set_ydata(u[frame,:])
         title.set_text(f'Frame {frame+1}/{nFrames}')
         return line, title
     ani = animation.FuncAnimation(fig=fig, func=updateFrame, frames=nFrames-1, blit=True, interval=1000/fps,repeat=False)
     writer = animation.FFMpegWriter(fps=fps)
     ani.save(path[:-4]+'_hline.avi', writer=writer, dpi=150)
 
-def compareAtPoint(input1, input2):
+def compareAlgo(path,legend,output,fps):
+    paths = path.split(',')
+    nFiles = len(paths)
     mm_per_px = 0.02175955
     fps_capture = 130000
     factor = mm_per_px*1e-3*fps_capture
-    u1 = input1[:,:,:,0]*factor
-    u2 = input2[:,:,:,0]*factor
-    #velMag = np.sqrt(u**2+v**2)
-    #pointX = 
-    y = 40
-    xPts = [20, 100, 180]
-    yPts = [y,y,y]
-    plt.figure(1)
-    for x,y in zip(xPts,yPts):
-        plt.plot(u1[:,y,x],'-',label='RAFT')
-        plt.plot(u2[:,y,x],'--',label='Farneback')
-        plt.legend()
-    plt.figure(2)
-    plt.imshow(u1[0,:,:])
-    plt.scatter(xPts,yPts,c='red')
-    plt.show()
+    dataAll = []
+    legends = legend.split(',')
+    y = 44
+    for file in paths:
+        dataAll.append(np.load(file)[:,y,:,0]*factor)
+    x_mm = np.arange(dataAll[0].shape[1])*mm_per_px*8
+    nFrames = dataAll[0].shape[0]
+    fig, ax = plt.subplots()
+    lines = []
+    for f in range(nFiles):
+        line, = ax.plot(x_mm,dataAll[f][0,:], label=legends[f])
+        lines.append(line)
+    ax.axhline(0,color='black',linewidth=0.5)
+    ax.set_xlabel('x [mm]')
+    ax.set_ylabel('u [m/s]')
+    ax.set_ylim([-15,25])
+    title = ax.set_title(f'Frame 1/{nFrames}')
+    def updateFrame(frame):
+        for i,line in enumerate(lines):
+            line.set_ydata(dataAll[i][frame,:])
+            title.set_text(f'Frame {frame+1}/{nFrames}')
+        return *lines, title
+    ani = animation.FuncAnimation(fig=fig, func=updateFrame, frames=nFrames-1, blit=True, interval=1000/fps,repeat=False)
+    writer = animation.FFMpegWriter(fps=fps)
+    ani.save(output, writer=writer, dpi=150)
+    
+    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--method', help="type of plot")
     parser.add_argument('--path', help="input video")
-    parser.add_argument('--path2', help="input video")
+    parser.add_argument('--legend', help="input video")
+    parser.add_argument('--output', help="input video")
     parser.add_argument('--fps', default=10, help="fps output video")
     args = parser.parse_args()
     if args.method == 'points':
@@ -104,8 +117,6 @@ if __name__ == '__main__':
         plotVelAtLines(args.path)
     elif args.method == 'hlines':
         plotVelAtHLines(args.path,int(args.fps))
-    elif args.method == 'compare':
-        input1 = np.load(args.path)
-        input2 = np.load(args.path2)
-        compareAtPoint(input1,input2)
+    elif args.method == 'compareAlgo':
+        compareAlgo(args.path,args.legend,args.output,int(args.fps))
     
