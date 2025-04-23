@@ -113,6 +113,7 @@ def compareAlgo(path,legend,output,fps,algo):
     ax.set_xlabel('x [mm]')
     ax.set_ylabel('u [m/s]')
     ax.set_ylim([-15,25])
+    ax.legend(loc='upper right')
     title = ax.set_title(f'Frame 1/{nFrames}')
     def updateFrame(frame):
         for i,line in enumerate(lines):
