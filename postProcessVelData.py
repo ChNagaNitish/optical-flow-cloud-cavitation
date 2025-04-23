@@ -95,7 +95,9 @@ def compareAlgo(path,legend,output,fps,algo):
         dataAll.append(np.load(paths[f])[:,y,:,0]*factor)
     x_mm = np.arange(dataAll[0].shape[1])*mm_per_px*8
     if algo=='piv':
-        x_piv = np.arange(dataAll[-1].shape[1]*mm_per_px*16)
+        x_piv = np.arange(dataAll[-1].shape[1])*mm_per_px*16
+    else:
+        x_piv = x_mm
     nFrames = dataAll[0].shape[0]
     fig, ax = plt.subplots()
     lines = []
