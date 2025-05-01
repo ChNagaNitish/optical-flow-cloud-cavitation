@@ -18,7 +18,7 @@ def load_image(frame):
     img = torch.from_numpy(img).permute(2, 0, 1).float()
     return img[None].to(DEVICE)
 
-def raftOpticalFlow(args, inputVid, outputVid,saveVel):
+def raftOpticalFlow(args, inputVid,saveVel):
     model = torch.nn.DataParallel(RAFT(args))
     model.load_state_dict(torch.load(args.model, map_location=torch.device(DEVICE)))
 
@@ -36,7 +36,6 @@ def raftOpticalFlow(args, inputVid, outputVid,saveVel):
         pad_width = window_width // 2
         kernel = np.ones(window_size) / (window_height*window_width)
         velData = np.zeros((frame_count-1, h//window_height, w//window_width, 2), dtype='float64')
-        velData = []
         for frame_index in tqdm.tqdm(range(1,frame_count), desc="Processing Video Frame Pairs"):
             ret, curr_frame = inputVid.read()
             image1 = load_image(prev_frame)
@@ -52,7 +51,6 @@ def raftOpticalFlow(args, inputVid, outputVid,saveVel):
             velData[frame_index-1] = averaged_arr
             prev_frame = curr_frame
         inputVid.release()
-        outputVid.release()
         np.save(saveVel,np.array(velData))
     
 
