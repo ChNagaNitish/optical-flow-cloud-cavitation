@@ -38,20 +38,24 @@ def plotVelAtLines(path,algo):
     mm_per_px = 0.02175955
     fps_capture = 130000
     factor = mm_per_px*1e-3*fps_capture
-    fac = 8
     u = inputVelData[:,:,:,0]*factor
-    v = inputVelData[:,:,:,1]*factor
-    velMag = np.sqrt(u**2 + v**2)
+    #v = inputVelData[:,:,:,1]*factor
+    #velMag = np.sqrt(u**2 + v**2)
     xPts = [20, 80, 140]
     plt.figure(1)
     for x in xPts:
         if algo=='piv':
-            x=int(x/2)
-            fac=16
-        plt.plot(np.mean(u[:,:,x],axis=0),(u.shape[1]-1)*mm_per_px*fac-np.arange(u.shape[1])*mm_per_px*fac,label='x = ' + str(x*fac*mm_per_px) + ' mm')
+            y_mm = np.arange(u.shape[1]-1,-1,-1)*mm_per_px*4
+            plt.plot(np.nanmean(u[:,:,int(x*2)],axis=0)/0.001,y_mm,label='x = ' + str(x*8*mm_per_px) + ' mm')
+        else:
+            y_mm = np.arange(u.shape[1]-1,-1,-1)*mm_per_px*8
+            plt.plot(np.mean(u[:,:,x],axis=0),y_mm,label='x = ' + str(x*8*mm_per_px) + ' mm')
         plt.legend()
     plt.xlabel('Velocity (m/s)')
     plt.ylabel('y (mm)')
+    plt.xticks(np.arange(-4,24,2))
+    plt.minorticks_on()
+    plt.grid(color = 'black', linestyle = '--', linewidth = 0.25)
     plt.savefig(path[:-4]+'_compareLines.png')
 
 def plotVelAtHLines(path,fps):
@@ -85,30 +89,30 @@ def compareAlgo(path,legend,output,fps,algo):
     mm_per_px = 0.02175955
     fps_capture = 130000
     factor = mm_per_px*1e-3*fps_capture
-    fac = 8
     dataAll = []
     legends = legend.split(',')
-    y = 44
+    y = 40
     for f in range(nFiles):
         if f==(nFiles-1) and algo=='piv':
-            y=int(y/2)
-        dataAll.append(np.load(paths[f])[:,y,:,0]*factor)
+            yPIV=int(y*2)
+            dataAll.append(np.load(paths[f])[:,yPIV,:,0]*factor/0.001)
+        else:
+            dataAll.append(np.load(paths[f])[:,y,:,0]*factor)
     x_mm = np.arange(dataAll[0].shape[1])*mm_per_px*8
     if algo=='piv':
-        x_piv = np.arange(dataAll[-1].shape[1])*mm_per_px*16
+        x_piv = np.arange(dataAll[-1].shape[1])*mm_per_px*4
     else:
         x_piv = x_mm
     nFrames = dataAll[0].shape[0]
     fig, ax = plt.subplots()
+    print('Started')
     lines = []
     for f in range(nFiles):
         if f!=(nFiles-1):
             line, = ax.plot(x_mm,dataAll[f][0,:], label=legends[f])
         else:
             line, = ax.plot(x_piv,dataAll[f][0,:], label=legends[f])
-        print('Here')
         lines.append(line)
-        print('Here')
     ax.axhline(0,color='black',linewidth=0.5)
     ax.set_xlabel('x [mm]')
     ax.set_ylabel('u [m/s]')
