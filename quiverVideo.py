@@ -23,9 +23,15 @@ def quiverVideo(inputVid,flowPath,outputVid):
         ret, curr_frame = inputVid.read()
         curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)
         y, x = np.mgrid[0:h:window_height, 0:w:window_width] 
+        u = velData[frame_index-1,:,:,0]
+        v = -velData[frame_index-1,:,:,1]
+        mag = np.sqrt(u**2 + v**2)
+        u_norm = u / mag
+        v_norm = v / mag
         plt.figure(figsize=(w / 100, h / 100), dpi=100)
         plt.imshow(prev_gray, cmap='gray')
-        plt.quiver(x, y, velData[frame_index-1,:,:,0], -velData[frame_index-1,:,:,1], color='red')
+        #plt.quiver(x[::4,::4], y[::4,::4], u_norm[::4,::4], v_norm[::4,::4], mag[::4,::4], cmap='viridis',scale=10)
+        plt.quiver(x[::4,::4], y[::4,::4], u[::4,::4], v[::4,::4],color='red',scale=90)
         plt.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         buf = io.BytesIO()
