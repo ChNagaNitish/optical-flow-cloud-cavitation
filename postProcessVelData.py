@@ -2,22 +2,24 @@ import numpy as np
 import argparse
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import h5py
 
-def plotVelAtPoint(path,algo,showPlot):
-    inputVelData = np.load(path)
-    mm_per_px = 0.05902778 #Test1
-    #mm_per_px = 0.02175955 #Test5
+def plotVelAtPoint(path,algo):
+    inputVelData = h5py.File(path,'r')
+    attrs = dict(inputVelData['velocity'].attrs)
+    #mm_per_px = 0.05902778 #Test1
+    mm_per_px = 0.02175955 #Test5
     fps_capture = 130000
     factor = mm_per_px*1e-3*fps_capture
-    fac = 8
-    u = inputVelData[:,:,:,0]*factor
+    window = attrs['window']
+    #u = inputVelData[:,:,:,0]*factor
     #v = inputVelData[:,:,:,1]*factor
     #velMag = np.sqrt(u**2+v**2)
     #y = 40 #Test1
-    y = 22
-    #y = 44 #Test5
-    xPts = [5, 60, 120] #Test1
-    #xPts = [20, 80, 140] #Test5
+    #y = 22
+    y = 88 #Test5
+    #xPts = [5, 60, 120] #Test1
+    xPts = [20, 80, 140] #Test5
     yPts = [y,y,y]
     plt.figure(1,figsize=(15,6))
     for x,y in zip(xPts,yPts):
@@ -25,18 +27,17 @@ def plotVelAtPoint(path,algo,showPlot):
             x=int(x/2)
             y=int(y/2)
             fac=16
-        plt.plot(u[:,y,x],'--',label='x = ' + str(x*fac*mm_per_px) + ' mm')
+        plt.plot(inputVelData['velocity'][:,y,x,0]*factor,'--',label='x = ' + str(x*fac*mm_per_px) + ' mm')
         plt.legend()
     plt.xlabel('Frames')
     plt.ylabel('Velocity (m/s)')
     plt.savefig(path[:-4]+'_comparePts.png', bbox_inches = 'tight', pad_inches = 0, transparent=False)
-    if bool(showPlot):
-        plt.figure(2)
-        plt.imshow(u[30,:,:])
-        plt.scatter(xPts,yPts,c='red')
-        plt.xlabel('x (px)')
-        plt.ylabel('y (px)')
-        plt.show()
+    plt.figure(2)
+    plt.imshow(inputVelData['velocity'][10,:,:,0]*factor)
+    plt.scatter(xPts,yPts,c='red')
+    plt.xlabel('x (px)')
+    plt.ylabel('y (px)')
+    plt.show()
 
 def plotVelAtLines(path,algo):
     inputVelData = np.load(path)
@@ -171,7 +172,7 @@ if __name__ == '__main__':
     parser.add_argument('--fps', default=10, help="fps output video")
     args = parser.parse_args()
     if args.method == 'points':
-        plotVelAtPoint(args.path,args.algo,args.showPlot)
+        plotVelAtPoint(args.path,args.algo)
     elif args.method == 'lines':
         plotVelAtLines(args.path,args.algo)
     elif args.method == 'hlines':
