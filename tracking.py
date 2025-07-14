@@ -68,7 +68,6 @@ def farnebackMethod(inputVid, window_height, window_width, roi, saveVel):
         prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)[roi[0]:roi[1],roi[2]:roi[3]]
     frame_count = int(inputVid.get(cv2.CAP_PROP_FRAME_COUNT))
     h, w = prev_gray.shape
-    print(h,w)
     pad_height = window_height // 2
     pad_width = window_width // 2
     kernel = np.ones([window_height, window_width]) / (window_height*window_width)
@@ -84,8 +83,8 @@ def farnebackMethod(inputVid, window_height, window_width, roi, saveVel):
             curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)[roi[0]:roi[1],roi[2]:]
         else:
             curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)[roi[0]:roi[1],roi[2]:roi[3]]
-        plt.imshow(curr_gray)
-        plt.show()
+        #plt.imshow(curr_gray)
+        #plt.show()
         flow = cv2.calcOpticalFlowFarneback(prev_gray, curr_gray, flow, 0.5, 3, 15, 3, 5, 1.2, 0)
         if window_width!=1:
             padded_arr = np.pad(flow, ((pad_height, pad_height), (pad_width, pad_width), (0, 0)), mode='reflect')
