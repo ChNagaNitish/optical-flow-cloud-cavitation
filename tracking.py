@@ -63,7 +63,10 @@ def raftOpticalFlow(args, inputVid,saveVel):
 def farnebackMethod(inputVid, window_height, window_width, roi, saveVel):
     ret, prev_frame = inputVid.read()
     if roi[-1]==-1:
-        prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)[roi[0]:roi[1],roi[2]:]
+        if roi[1]==-1:
+            prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)[roi[0]:,roi[2]:]
+        else:
+            prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)[roi[0]:roi[1],roi[2]:]
     else:
         prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)[roi[0]:roi[1],roi[2]:roi[3]]
     frame_count = int(inputVid.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -80,7 +83,10 @@ def farnebackMethod(inputVid, window_height, window_width, roi, saveVel):
     for frame_index in tqdm.tqdm(range(1,frame_count), desc="Processing Video Frame Pairs"):
         ret, curr_frame = inputVid.read()
         if roi[-1]==-1:
-            curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)[roi[0]:roi[1],roi[2]:]
+            if roi[1]==-1:
+                curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)[roi[0]:,roi[2]:]
+            else:
+                curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)[roi[0]:roi[1],roi[2]:]
         else:
             curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)[roi[0]:roi[1],roi[2]:roi[3]]
         #plt.imshow(curr_gray)
