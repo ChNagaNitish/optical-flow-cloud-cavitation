@@ -60,7 +60,7 @@ def raftOpticalFlow(args, inputVid,saveVel):
         np.save(saveVel,np.array(velData))
     
 
-def farnebackMethod(inputVid, window_height, window_width, roi, saveVel):
+def farnebackMethod(inputVid, window_height, window_width, roi, saveVel, mm_per_px, fps_capture):
     ret, prev_frame = inputVid.read()
     if roi[-1]==-1:
         if roi[1]==-1:
@@ -103,6 +103,8 @@ def farnebackMethod(inputVid, window_height, window_width, roi, saveVel):
         prev_gray = curr_gray
     velData.attrs['window_height'] = window_height
     velData.attrs['window_width'] = window_width
+    velData.attrs['mm_per_px'] = mm_per_px
+    velData.attrs['fps_capture'] = fps_capture
     f.close()
     inputVid.release()
     #np.save(saveVel,velData)
@@ -111,11 +113,13 @@ def farnebackMethod(inputVid, window_height, window_width, roi, saveVel):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--method', default='farneback', help="raft or farneback or piv")
-    parser.add_argument('--model', help="raft-model or farneback-case or piv-case")
+    parser.add_argument('--model', default='c1',help="raft-model or farneback-case or piv-case")
     parser.add_argument('--path', help="input video")
-    parser.add_argument('--win_h', default=8, help="Averging window - height")
-    parser.add_argument('--win_w', default=8, help="Averging window - width")
-    parser.add_argument('--roi', type=int, nargs=4, help="Region of interest - hs he ws we")
+    parser.add_argument('--win_h', default=4, help="Averging window - height")
+    parser.add_argument('--win_h', default=4, help="Averging window - height")
+    parser.add_argument('--imgScale', default=0.001, help="Image Scale")
+    parser.add_argument('--fpsCam', default=130000, help="FPS of camera used for capturing")
+    parser.add_argument('--roi', type=int, nargs=4, default=[0,-1,0,-1], help="Region of interest - hs he ws we")
     parser.add_argument('--small', action='store_true', help='use small model')
     parser.add_argument('--mixed_precision', action='store_true', help='use mixed precision')
     parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
@@ -131,6 +135,6 @@ if __name__ == '__main__':
         outputVelocityPath = args.path[:-4]+'_'+args.model.split("/")[-1][:-4]+'.npy'
         raftOpticalFlow(new_args, inputVid, outputVelocityPath)
     elif args.method == 'farneback':
-        outputVelocityPath = args.path[:-4]+'_'+args.method+'_'+args.model+'.h5'
-        farnebackMethod(inputVid, int(args.win_h), int(args.win_w), args.roi, outputVelocityPath)
+        outputVelocityPath = args.path[:-4]+'_fb'+args.model+'.h5'
+        farnebackMethod(inputVid, int(args.win_h), int(args.win_w), args.roi, outputVelocityPath, float(args.imgScale), int(args.fpsCam))
 #############################################################################################
