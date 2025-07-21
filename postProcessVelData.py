@@ -9,6 +9,62 @@ import tqdm
 This script is used to for postprocessing highspeed videos and velocity fields obtained from Optical Flow methods.
 '''
 
+def set_journal_style():
+    """
+    Applies a professional, journal-quality style to Matplotlib plots.
+    """
+    plt.style.use('seaborn-v0_8-paper') # A good base style
+    
+    plt.rcParams.update({
+        # Font settings for clarity and consistency
+        "font.family": "sans-serif",
+        "font.sans-serif": ["Helvetica"], # Or "Helvetica"
+        "font.size": 10,
+        "axes.labelsize": 10,
+        "xtick.labelsize": 8,
+        "ytick.labelsize": 8,
+        "legend.fontsize": 8,
+        "figure.titlesize": 12,
+
+        # Use LaTeX for text rendering for a professional look
+        "text.usetex": True,
+        "text.latex.preamble": r'\usepackage{amsmath}',
+
+        # Figure and axes settings
+        "figure.dpi": 300,
+        "figure.edgecolor": "black",
+        "figure.facecolor": "white",
+
+        # Axes properties
+        "axes.labelpad": 6.0,
+        "axes.linewidth": 0.8,
+        "axes.grid": True,
+        "axes.grid.which": "major",
+        "grid.color": "lightgray",
+        "grid.linestyle": ":",
+
+        # Tick properties
+        "xtick.major.size": 4,
+        "xtick.minor.size": 2,
+        "xtick.direction": "in",
+        "ytick.major.size": 4,
+        "ytick.minor.size": 2,
+        "ytick.direction": "in",
+        
+        # Legend properties
+        "legend.frameon": True,
+        "legend.framealpha": 0.8,
+        "legend.facecolor": "white",
+        "legend.edgecolor": "black",
+        
+        # Savefig settings
+        "savefig.dpi": 300,
+        "savefig.transparent": True,
+        "savefig.format": "png", # Vector format for scalability
+        "savefig.bbox": "tight", # Automatically adjust plot to fit
+    })
+
+
 def plotVelAtPoint(path):
     inputVelData = h5py.File(path,'r')
     attrs = dict(inputVelData['velocity'].attrs)
@@ -17,25 +73,31 @@ def plotVelAtPoint(path):
     vel_scale_fac = mm_per_px*1e-3*fps_capture
     x_scale_fac = attrs['window_width']*mm_per_px
     y = int(inputVelData['velocity'].shape[1]-2)
-    xPtsmm = [2,5,10]
+    xPtsmm = [2,10,20]
     xPts = [int(x/x_scale_fac) for x in xPtsmm]
     yPts = [y for x in xPtsmm]
-    pointData = np.zeros((inputVelData['velocity'].shape[0]),dtype='float32')
-    plt.figure(1,figsize=(15,6))
-    for x,y in zip(xPts,yPts):
-        for chunk_slice in inputVelData['velocity'].iter_chunks():
-            np.multiply(np.mean(inputVelData['velocity'][chunk_slice][:,y,x-1:x+2,0],axis=1),vel_scale_fac,out=pointData[chunk_slice[0]])
-        plt.plot(np.arange(inputVelData['velocity'].shape[0])/fps_capture,pointData,'--',label='x = ' + str(np.round(x*x_scale_fac,2)) + ' mm')
-        plt.legend()
-    plt.xlabel('Frames')
-    plt.ylabel('Velocity (m/s)')
-    plt.savefig(path[:-4]+'_comparePts.png', bbox_inches = 'tight', pad_inches = 0, transparent=False)
-    plt.figure(2)
+    pointsData = np.zeros((len(xPts),inputVelData['velocity'].shape[0]),dtype='float32')
+    for chunk_slice in inputVelData['velocity'].iter_chunks():
+        i=0
+        for x,y in zip(xPts,yPts):
+            np.multiply(np.mean(inputVelData['velocity'][chunk_slice][:,y,x-1:x+2,0],axis=1),vel_scale_fac,out=pointsData[i,chunk_slice[0]])
+            i+=1
+    set_journal_style()
+    plt.figure(figsize=(15,6))
+    fig,axs = plt.subplots(len(xPts),1)
+    for i,x in enumerate(xPts):
+        axs[i].plot(np.arange(inputVelData['velocity'].shape[0])/fps_capture,pointsData[i,:],'--')
+        axs[i].set_ylabel('x = ' + str(np.round(x*x_scale_fac,2)) + ' mm')
+    fig.supxlabel('time [sec]')
+    fig.supylabel('u [m/s]')
+    plt.savefig(path[:-4]+'_pts.png')#, bbox_inches = 'tight', pad_inches = 0, transparent=False)
+    plt.close()
+    '''plt.figure(2)
     plt.imshow(inputVelData['velocity'][200,:,:,0]*vel_scale_fac,cmap='viridis')
     plt.scatter(xPts,yPts,c='red')
     plt.xlabel('x (px)')
-    plt.ylabel('y (px)')
-    plt.show()
+    plt.ylabel('y (px)')'''
+    #plt.show()
 
 def velAtLines(path):
     inputVelData = h5py.File(path,'r')
@@ -216,7 +278,16 @@ if __name__ == '__main__':
     parser.add_argument('--fps', default=10, help="fps output video")
     args = parser.parse_args()
     if args.method == 'points':
-        plotVelAtPoint(args.path)
+        if args.path[:-1]==5:
+            plotVelAtPoint(args.path)
+        else:
+            import os
+            import glob
+            files = glob.glob(os.path.join(args.path, '*.h5'))
+            for file in files:
+                print(file)
+                plotVelAtPoint(file)
+
     elif args.method == 'lines':
         velAtLines(args.path)
     elif args.method == 'plotlines':
