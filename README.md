@@ -8,9 +8,9 @@
 **tracking.py** -> The main script to run Optical flow methods(RAFT and Farneback) on input Videos <br/>
 
 ## tracking.py
-python3 tracking.py --method farneback --model c1 --path 32_50f.avi --win_h 4 --win_w 4 --roi 145 333 4 -1 --imgScale 0.0477273 --fpsCam 13000 <br/>
-python3 tracking.py --method=raft --model=models/raft-sintel.pth --path 32_50f.avi --win_h 4 --win_w 4 --roi 145 333 4 -1 --imgScale 0.0477273 --fpsCam 13000 <br/> <br/>
-**Arguments**
+-> python3 tracking.py --method farneback --model c1 --path 32_50f.avi --win_h 4 --win_w 4 --roi 145 333 4 -1 --imgScale 0.0477273 --fpsCam 13000 <br/>
+-> python3 tracking.py --method=raft --model=models/raft-sintel.pth --path 32_50f.avi --win_h 4 --win_w 4 --roi 145 333 4 -1 --imgScale 0.0477273 --fpsCam 13000 <br/> <br/>
+**Arguments** <br/>
 --method -> to use raft or farneback optical flow <br/>
 --model -> for Farneback it represents case number for different numerical parameters, for RAFT it is the model parameters that should be used. For RAFT models, you can look inside the models folder and use them accordingly <br/>
 --path -> path for the input video <br/>
