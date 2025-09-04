@@ -9,7 +9,7 @@
 
 ## tracking.py
 python3 tracking.py --method farneback --model c1 --path 32_50f.avi --win_h 4 --win_w 4 --roi 145 333 4 -1 --imgScale 0.0477273 --fpsCam 13000 <br/>
-python3 tracking.py --method=raft --model=models/raft-sintel.pth --path 32_50f.avi --win_h 4 --win_w 4 --roi 145 333 4 -1 --imgScale 0.0477273 --fpsCam 13000 <br/>
+python3 tracking.py --method=raft --model=models/raft-sintel.pth --path 32_50f.avi --win_h 4 --win_w 4 --roi 145 333 4 -1 --imgScale 0.0477273 --fpsCam 13000 <br/> <br/>
 **Arguments**
 --method -> to use raft or farneback optical flow <br/>
 --model -> for Farneback it represents case number for different numerical parameters, for RAFT it is the model parameters that should be used. For RAFT models, you can look inside the models folder and use them accordingly <br/>
@@ -19,7 +19,7 @@ python3 tracking.py --method=raft --model=models/raft-sintel.pth --path 32_50f.a
 --roi -> region of interest for the input video. Let's say the video frame size is 384*1280 and we are only interested in some part of it, we provide the starting pixel position in height(top), ending position in height(bottom), starting position in width(left), ending in width(right). If you do not provide, it will process the whole video frame <br/>
 --imgScale -> the calibration value obtained from experiment. It is in mm/px. Default is 0.001. <br/>
 --fpsCam -> the framerate at which video is captured <br/>
-**** The velocity is saved as .h5 format in px/frame units and the imgScale, fpsCam, win_h, win_w are saved as attributes for postprocessing later
+**Note:** The velocity is saved as .h5 format in px/frame units and the imgScale, fpsCam, win_h, win_w are saved as attributes for postprocessing later
 
 ## quiverVideo.py
 Coming soon. Needs to be updated for the new .h5 format
