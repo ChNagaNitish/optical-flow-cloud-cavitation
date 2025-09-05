@@ -153,7 +153,7 @@ if __name__ == '__main__':
         setattr(new_args, 'small', args.small)
         setattr(new_args, 'mixed_precision', args.mixed_precision)
         setattr(new_args, 'alternate_corr', args.alternate_corr)
-        outputVelocityPath = args.path[:-4]+'_'+args.model.split("/")[-1][:-4]+'.npy'
+        outputVelocityPath = args.path[:-4]+'_'+args.model.split("/")[-1][:-4]+'.h5'
         raftOpticalFlow(new_args, inputVid, int(args.win_h), int(args.win_w), args.roi, outputVelocityPath, float(args.imgScale), int(args.fpsCam))
     elif args.method == 'farneback':
         outputVelocityPath = args.path[:-4]+'_fb'+args.model+'.h5'
