@@ -1,7 +1,8 @@
 # optical-flow-cloud-cavitation
 
 ## Purpose of Different Scripts
-**gpuJobScript.h** -> To submit job on ARC using GPUs <br/>
+**gpuJobScript.sh** -> To submit job on ARC(Falcon cluster) using GPUs <br/>
+**serialJob.sh** -> To submit postprocessing scripts on ARC(Owl cluster) <br/>
 **postProcessVelData.py** -> To generate various plots and animations with the generated velocity data from Optical Flow methods <br/>
 **quiverVideo.py** -> To overlay velocity vectors on top of the input video <br/>
 **speedUp.py** -> To speed up videos for better visualization <br/>
@@ -20,13 +21,16 @@
 --roi -> region of interest for the input video. Let's say the video frame size is 384*1280 and we are only interested in some part of it, we provide the starting pixel position in height(top), ending position in height(bottom), starting position in width(left), ending in width(right). If you do not provide, it will process the whole video frame <br/>
 --imgScale -> the calibration value obtained from experiment. It is in mm/px. Default is 0.001. <br/>
 --fpsCam -> the framerate at which video is captured <br/>
-**Note:** The velocity is saved as .h5 format in px/frame units and the imgScale, fpsCam, win_h, win_w are saved as attributes for postprocessing later
+--use_clahe -> A preprocessing step to make the contrast uniform. No inputs needed for this arguement. Just using it will activate preprocessing step. Recommended to use it. <br/>
+**Note:** The velocity is saved as .h5 format in px/frame units and the imgScale, fpsCam, win_h, win_w are saved as attributes for postprocessing later <br/>
 
 ## quiverVideo.py
-Coming soon. Needs to be updated for the new .h5 format
+**Example** <br/>
+-> python3 quiverVideo.py --path 32_50f.avi --velocity 32_50f_raft-cloudcav.h5 --fps 10 <br/>
 
 ## postProcessVelData.py
-Coming soon. Needs to be updated for the new .h5 format
-
-python3 postProcessVelData.py --method=lines --path=48_farneback_default.npy <br/>
-python3 postProcessVelData.py --method=compareAlgo --path=48_farneback_default.npy,48_raft-sintel.npy --legend=farneback-default,raft-sintel --output=48_compare_farneback_raft.avi --fps=20 --algo=none
+**Examples** <br/>
+python3 postProcessVelData.py --method vLinesAvg --path 32_50f_raft-cloudcav.h5 <br/>
+python3 postProcessVelData.py --method hline --path 32_50f_raft-cloudcav.h5 <br/>
+python3 postProcessVelData.py --method points --path 32_50f_raft-cloudcav.h5 <br/>
+**Note:** so far only the above mentioned 3 different methods are working. points will generate a time series at 2,10,20mm x location from throat. hline will generate a video showing velocity evolution at a line close to bottom wall. vLinesAvg will plot time averaged velocity along the verticle lines at x points 1.5,3,5,10,20mm <br/>
