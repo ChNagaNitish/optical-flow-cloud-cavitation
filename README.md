@@ -11,7 +11,7 @@
 ## tracking.py
 **Examples** <br/>
 -> python3 tracking.py --method farneback --model c1 --path 32_50f.avi --win_h 4 --win_w 4 --roi 145 333 4 -1 --imgScale 0.0477273 --fpsCam 13000 <br/>
--> python3 tracking.py --method=raft --model=models/raft-sintel.pth --path 32_50f.avi --win_h 4 --win_w 4 --roi 145 333 4 -1 --imgScale 0.0477273 --fpsCam 13000 <br/> <br/>
+-> python3 tracking.py --method=raft --model=models/raft-cloudcav.pth --path 32_50f.avi --win_h 4 --win_w 4 --roi  0 360 60 1276 --imgScale 0.02175955 --fpsCam 130000 --use_clahe <br/> <br/>
 **Arguments** <br/>
 --method -> to use raft or farneback optical flow <br/>
 --model -> for Farneback it represents case number for different numerical parameters, for RAFT it is the model parameters that should be used. For RAFT models, you can look inside the models folder and use them accordingly <br/>
