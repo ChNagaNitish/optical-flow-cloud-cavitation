@@ -18,7 +18,7 @@
 --path -> path for the input video <br/>
 --win_h -> window height for averaging velocity <br/>
 --win_w -> window width for avergaing velocity <br/>
---roi -> region of interest for the input video. Let's say the video frame size is 384*1280 and we are only interested in some part of it, we provide the starting pixel position in height(top), ending position in height(bottom), starting position in width(left), ending in width(right). If you do not provide, it will process the whole video frame <br/>
+--roi -> region of interest for the input video. Let's say the video frame size is 384*1280 and we are only interested in some part of it, we provide the starting pixel position in height(top), ending position in height(bottom), starting position in width(left), ending in width(right). If you do not provide, it will process the whole video frame. Make sure to check if the width and height of ROI is divisible by 8 to avoid errors. <br/>
 --imgScale -> the calibration value obtained from experiment. It is in mm/px. Default is 0.001. <br/>
 --fpsCam -> the framerate at which video is captured <br/>
 --use_clahe -> A preprocessing step to make the contrast uniform. No inputs needed for this arguement. Just using it will activate preprocessing step. Recommended to use it. <br/>
