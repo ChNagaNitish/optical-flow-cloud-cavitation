@@ -103,15 +103,10 @@ def raftOpticalFlow(args, inputVid):
                 # Load images for RAFT
                 image1 = load_image(prev_frame_processed)
                 image2 = load_image(curr_frame_processed)
-
-                padder = InputPadder(image1.shape)
-                image1, image2 = padder.pad(image1, image2)
-                print(image1.shape)
                 
                 # Get optical flow
                 _, flow_up = model(image1, image2, iters=20, test_mode=True)
                 flow = flow_up[0].permute(1, 2, 0).cpu().numpy()
-                print(flow.shape)
 
                 # Perform window averaging if needed
                 if window_width > 1 or window_height > 1:
@@ -146,11 +141,6 @@ def farnebackMethod(args, inputVid):
     mm_per_px = float(args.imgScale)
     fps_capture = int(args.fpsCam)
     outputVelocityPath = args.path[:-4] + '_fb' + args.model + '.h5'
-
-    # Initialize CLAHE if requested
-    clahe = None
-    if args.use_clahe:
-        clahe = cv2.createCLAHE(clipLimit=args.clahe_clip_limit, tileGridSize=(args.clahe_tile_size, args.clahe_tile_size))
     
     ret, prev_frame_raw = inputVid.read()
     if not ret:
@@ -162,7 +152,7 @@ def farnebackMethod(args, inputVid):
     prev_gray_cropped = crop_frame(prev_gray, roi)
     
     if args.use_clahe:
-        prev_gray_processed = clahe.apply(prev_gray_cropped)
+        prev_gray_processed = apply_clahe(prev_frame_cropped,args.clahe_clip_limit,args.clahe_tile_size)
     else:
         prev_gray_processed = prev_gray_cropped
 
@@ -190,7 +180,7 @@ def farnebackMethod(args, inputVid):
             curr_gray_cropped = crop_frame(curr_gray, roi)
             
             if args.use_clahe:
-                curr_gray_processed = clahe.apply(curr_gray_cropped)
+                curr_gray_processed = clahe.apply(curr_gray_cropped,args.clahe_clip_limit,args.clahe_tile_size)
             else:
                 curr_gray_processed = curr_gray_cropped
             
