@@ -17,4 +17,4 @@ module load CUDA/12.6.0
 # Activating the Python Environment
 source "$HOME/workEnv/bin/activate"
 # Running the Optical Flow code
-python tracking.py --method=raft --model=models/5000_raft-cloudcavitation.pth --path=32_50f.avi --imgScale=0.02176 --fpsCam=130000
+python tracking.py --method=raft --model=models/raft-cloudcav.pth --path=32_50f.avi --imgScale=0.02176 --fpsCam=130000 --use_clahe --roi 0 360 60 1276

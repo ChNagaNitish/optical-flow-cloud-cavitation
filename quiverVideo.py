@@ -5,7 +5,18 @@ import cv2
 import numpy as np
 import h5py
 
-def outputVideoWriter(inputVid, videoName, new_fps):
+
+def crop_frame(frame, roi):
+    """
+    Crops a frame using the given ROI tuple (y_start, y_end, x_start, x_end).
+    Handles the -1 convention from the original code, where -1 means 'to the end'.
+    """
+    y_start, y_end, x_start, x_end = roi
+    y_slice = slice(y_start, y_end if y_end != -1 else None)
+    x_slice = slice(x_start, x_end if x_end != -1 else None)
+    return frame[y_slice, x_slice]
+
+def outputVideoWriter(frame_width,frame_height, videoName, new_fps):
     """
     Creates a video writer object to save the output video.
 
@@ -19,11 +30,10 @@ def outputVideoWriter(inputVid, videoName, new_fps):
     """
     frame_width = int(inputVid.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(inputVid.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    # Using 'mp4v' for better compatibility with .mp4 extension
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = 0
     return cv2.VideoWriter(videoName, fourcc, new_fps, (frame_width, frame_height))
 
-def quiverVideo(inputVid, flowPath, outputVid):
+def quiverVideo(inputVid, flowPath, outputVideoPath, save_fps):
     """
     Generates a video of quiver plots overlaid on the input video frames.
 
@@ -32,14 +42,6 @@ def quiverVideo(inputVid, flowPath, outputVid):
         flowPath (str): The path to the HDF5 file containing velocity data.
         outputVid (cv2.VideoWriter): The video writer for the output.
     """
-    ret, prev_frame = inputVid.read()
-    if not ret:
-        print("Error: Could not read the first frame of the video.")
-        return
-
-    prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
-    frame_count = int(inputVid.get(cv2.CAP_PROP_FRAME_COUNT))
-    h, w = prev_frame.shape[:2]
 
     # --- MODIFIED SECTION: Load data from H5 file ---
     with h5py.File(flowPath, 'r') as hf:
@@ -54,12 +56,22 @@ def quiverVideo(inputVid, flowPath, outputVid):
         try:
             window_height = hf['velocity'].attrs['window_height']
             window_width = hf['velocity'].attrs['window_width']
+            roi = [int(c) for c in hf['velocity'].attrs['roi']]
             print(f"Read window size from attributes: {window_width}x{window_height}")
         except KeyError:
             print("Error: 'window_height' or 'window_width' attributes not found in the H5 file.")
             print("Please ensure these attributes are set on the 'velocity' dataset.")
             return
-    # --- END OF MODIFIED SECTION ---
+    
+    ret, prev_frame = inputVid.read()
+    if not ret:
+        print("Error: Could not read the first frame of the video.")
+        return
+
+    prev_gray = crop_frame(cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY),roi)
+    frame_count = int(inputVid.get(cv2.CAP_PROP_FRAME_COUNT))
+    h, w = prev_gray.shape
+    outputVid = cv2.VideoWriter(outputVideoPath, 0, save_fps, (w, h))
 
     for frame_index in range(1, frame_count):
         ret, curr_frame = inputVid.read()
@@ -67,7 +79,8 @@ def quiverVideo(inputVid, flowPath, outputVid):
             print(f"Warning: Could not read frame {frame_index}. Stopping.")
             break
             
-        curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)
+        curr_gray = crop_frame(cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY),roi)
+        print(curr_gray.shape)
         
         y, x = np.mgrid[0:h:window_height, 0:w:window_width]
 
@@ -83,8 +96,9 @@ def quiverVideo(inputVid, flowPath, outputVid):
         plt.figure(figsize=(w / 100, h / 100), dpi=100)
         plt.imshow(prev_gray, cmap='gray')
         
-        # Draw quiver plot, subsampling for clarity (e.g., every 4th arrow)
-        plt.quiver(x[::4, ::4], y[::4, ::4], u[::4, ::4], v[::4, ::4], color='red', scale=90)
+        # Draw quiver plot, subsampling for clarity (e.g., every 8th arrow)
+        skip = 6
+        plt.quiver(x[::skip, ::skip], y[::skip, ::skip], u[::skip, ::skip], v[::skip, ::skip], color='red', scale=90)
         
         plt.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
@@ -118,13 +132,11 @@ if __name__ == '__main__':
     else:
         # Determine output path based on the velocity file name
         output_name = args.velocity.rsplit('.', 1)[0]
-        outputVideoPath = f'{output_name}_quiver.mp4'
-        
-        outputVid = outputVideoWriter(inputVid, outputVideoPath, args.fps)
+        outputVideoPath = f'{output_name}_quiver.avi'
         
         print(f"Starting quiver video generation...")
         print(f"Input video: {args.path}")
         print(f"Velocity data: {args.velocity}")
         print(f"Output video: {outputVideoPath}")
         
-        quiverVideo(inputVid, args.velocity, outputVid)
+        quiverVideo(inputVid, args.velocity, outputVideoPath, args.fps)
