@@ -109,7 +109,7 @@ def raftOpticalFlow(args, inputVid):
                 print(image1.shape)
                 
                 # Get optical flow
-                _, flow_up = model(image1, image2, iters=12, test_mode=True)
+                _, flow_up = model(image1, image2, iters=20, test_mode=True)
                 flow = flow_up[0].permute(1, 2, 0).cpu().numpy()
                 print(flow.shape)
 
