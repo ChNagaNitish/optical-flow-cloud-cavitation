@@ -148,13 +148,13 @@ def farnebackMethod(args, inputVid):
         return
         
     # --- Preprocess the first frame ---
-    prev_gray = cv2.cvtColor(prev_frame_raw, cv2.COLOR_BGR2GRAY)
-    prev_gray_cropped = crop_frame(prev_gray, roi)
+    prev_frame_cropped = crop_frame(prev_frame_raw, roi)
     
     if args.use_clahe:
-        prev_gray_processed = apply_clahe(prev_frame_cropped,args.clahe_clip_limit,args.clahe_tile_size)
+        prev_frame_processed = apply_clahe(prev_frame_cropped,args.clahe_clip_limit,args.clahe_tile_size)
     else:
-        prev_gray_processed = prev_gray_cropped
+        prev_frame_processed = prev_frame_cropped
+    prev_gray_processed = cv2.cvtColor(prev_frame_processed, cv2.COLOR_BGR2GRAY)
 
     frame_count = int(inputVid.get(cv2.CAP_PROP_FRAME_COUNT))
     h, w = prev_gray_processed.shape
@@ -176,14 +176,13 @@ def farnebackMethod(args, inputVid):
                 break
 
             # --- Preprocess the current frame ---
-            curr_gray = cv2.cvtColor(curr_frame_raw, cv2.COLOR_BGR2GRAY)
-            curr_gray_cropped = crop_frame(curr_gray, roi)
+            curr_frame_cropped = crop_frame(curr_frame_raw, roi)
             
             if args.use_clahe:
-                curr_gray_processed = clahe.apply(curr_gray_cropped,args.clahe_clip_limit,args.clahe_tile_size)
+                curr_frame_processed = apply_clahe(curr_frame_cropped,args.clahe_clip_limit,args.clahe_tile_size)
             else:
-                curr_gray_processed = curr_gray_cropped
-            
+                curr_frame_processed = curr_frame_cropped
+            curr_gray_processed = cv2.cvtColor(curr_frame_processed, cv2.COLOR_BGR2GRAY)
             # Get optical flow
             flow = cv2.calcOpticalFlowFarneback(prev_gray_processed, curr_gray_processed, flow, 0.5, 3, 15, 3, 5, 1.2, 0)
             
